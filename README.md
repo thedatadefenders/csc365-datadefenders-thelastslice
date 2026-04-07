@@ -1,5 +1,11 @@
-# CSC 365 -Thge -datadefenders
-The Team Project of Data Defenders, the best team of Lucas Pierce's CSC 365 Section 5. 
+# CSC 365 - The Last Slice
+
+The Last Slice is the Team Project of Data Defenders, the best team of Lucas Pierce's CSC 365 Section 5. 
+
+Project Description:
+
+The Last Slice is a platform created for those who love pizza and are interested in understanding its nutritional value in detail. With The Last Slice, users can develop their own pizza recipes and experiment with a variety of ingredient combinations. However, pizza enthusiasts also need a way to see the nutritional impact that these ingredients have on their health. Whether users are exploring new flavors or aiming to create a healthier pizza, The Last Slice makes it possible to do both at once.  In terms of system architecture, our platform consists of a relational database that organizes ingredients, recipes, and nutritional information.  This database is also accompanied with the ability for users to interact with the database in a read or write capacity in order to develop or change their recipes.  Without a doubt, The Last Slice becomes a must-have tool for anyone who enjoys pizza.
+
 
 Members of the Data Defenders:
 
@@ -19,7 +25,3 @@ Owen Sam
 
 Email - oasam@calpoly.edu
 
-
-Project Description:
-
-The Last Slice is a platform created for those who love pizza and are keen on knowing its nutritional value in detail. With The Last Slice, users can develop their own pizza recipes and experiment with several different combinations.  However, as a very carbohydrate, pizza enjoyers need a way to see the nutritional effects that the ingredients will have on their health.  Therefore, if users want to experiment with different flavors or just cook a healthy pizza, The Last Slice makes it possible for them to do both at once. Furthermore, users can always come back to their recipes and improve them as we store them in a relational database, making The Last Slice a must have for any person who enjoys pizza.

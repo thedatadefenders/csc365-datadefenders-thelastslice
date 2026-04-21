@@ -121,7 +121,7 @@ After seeing the recipe and the ingredients once again, Aaron realizes that heâ€
 
 The recipe has been deleted, and sadly Aaron is still hungry for pizza.  
 
-## Flow 3
+## FLOW 3
 
 ### Motivation:
 Owen wants to plan his meals ahead of time, and the Last Slice offers the option for him to plan his meals ahead of time. Therefore, he decides to give the Last Slice a shot.

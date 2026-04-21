@@ -20,7 +20,7 @@ Then, the system returns a list of pizzas stored within the database.
 		“Ingridients” : [
 			“Thin crust”,
 			“Sauce”,
-			“chicken “
+			“chicken”,
 			“Cheese”]
 	}
 

@@ -116,6 +116,7 @@
 ### Calendar
 
 * Add Plan for Pizzas to Calendar (WRITE FUNCTION)
+
   (POST /calendar/{date}/pizzas)
 
   Input:

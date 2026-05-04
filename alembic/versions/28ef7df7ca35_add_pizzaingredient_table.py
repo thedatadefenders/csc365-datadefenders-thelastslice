@@ -25,7 +25,8 @@ def upgrade() -> None:
         sa.Column("ingredient_id", sa.Integer, sa.ForeignKey('Ingredients.ingredient_id'), nullable=False),
         sa.Column("amount", sa.Integer, nullable=False),
         sa.Column("unit", sa.String, nullable=False),
-        sa.PrimaryKeyConstraint('pizza_id', 'ingredient_id')
+        sa.PrimaryKeyConstraint('pizza_id', 'ingredient_id'),
+        sa.CheckConstraint("amount >= 0", name="check_amount_positive")
     )
 
 

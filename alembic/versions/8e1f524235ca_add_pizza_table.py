@@ -1,7 +1,7 @@
 """Add Users table
 
 Revision ID: 8e1f524235ca
-Revises: 
+Revises: e91d0c24f7d0
 Create Date: 2026-05-04 02:50:40.393110
 
 """
@@ -26,6 +26,8 @@ def upgrade() -> None:
         sa.Column("email", sa.String, nullable=False),
         sa.Column("created_at", sa.TIMESTAMP(timezone=True), server_default=sa.func.now())
     )
+    op.drop_table("global_inventory")
+
 
 def downgrade() -> None:
     op.drop_table("Users")

@@ -26,8 +26,14 @@ def upgrade() -> None:
         sa.Column("calories_per_unit", sa.Integer, nullable=False),
         sa.Column("protein_per_unit", sa.Integer, nullable=False),
         sa.Column("carbs_per_unit", sa.Integer, nullable=False),
-        sa.Column("fats_per_unit", sa.Integer, nullable=False)
+        sa.Column("fats_per_unit", sa.Integer, nullable=False),
+        sa.CheckConstraint("calories_per_unit >= 0", name="check_calories_positive"),
+        sa.CheckConstraint("protein_per_unit >= 0", name="check_protein_positive"),
+        sa.CheckConstraint("carbs_per_unit >= 0", name="check_carbs_positive"),
+        sa.CheckConstraint("fats_per_unit >= 0", name="check_fats_positive")
     )
+
+
 
 
 def downgrade() -> None:

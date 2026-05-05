@@ -25,7 +25,7 @@ class PizzaCreate(BaseModel):
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def create_pizza(pizza: PizzaCreate, user=Depends(auth.get_current_user)):
+def create_pizza(pizza: PizzaCreate, user_id = 0):
     with db.engine.begin() as conn:
         result = conn.execute(
             sqlalchemy.text("""
@@ -33,7 +33,7 @@ def create_pizza(pizza: PizzaCreate, user=Depends(auth.get_current_user)):
                 VALUES (:user_id, :name)
                 RETURNING pizza_id
             """),
-            {"user_id": user.user_id, "name": pizza.name}
+            {"user_id": user_id, "name": pizza.name}
         )
 
         pizza_id = result.scalar()

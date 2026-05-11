@@ -12,7 +12,6 @@ router = APIRouter(
     prefix="/pizzas",
     tags=["pizzas"],
     dependencies=[Depends(auth.get_api_key)],
-    
 )
 
 class IngredientInput(BaseModel):

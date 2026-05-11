@@ -16,7 +16,7 @@ router = APIRouter(
     dependencies=[Depends(auth.get_api_key)],
 )
 
-@router.post("/calendar/{pizza_date}/pizzas", status_code=status.HTTP_201_CREATED)
+@router.post("/{pizza_date}/pizzas", status_code=status.HTTP_201_CREATED)
 def add_pizza_to_calendar(
     pizza_date: date,
     pizza_id: int,
@@ -58,7 +58,7 @@ def add_pizza_to_calendar(
         "quantity": quantity
     }
 
-@router.get("/calendar/{pizza_date}/pizzas")
+@router.get("/{pizza_date}/pizzas")
 def get_calendar_pizzas(
     pizza_date: date,
     user_id: int = 0

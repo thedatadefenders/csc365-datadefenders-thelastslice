@@ -222,6 +222,40 @@ def get_pizza_nutrition(pizza_id: int):
             "fat": row.fat,
             "carbs": row.carbs,
         }
+    
+@router.get("/pizzas/{pizza_id}/ingredients")
+def get_pizza_ingredients(pizza_id: int):
+    with db.engine.connect() as conn:
+        pizza = conn.execute(
+            sqlalchemy.text("""
+                SELECT pizza_id
+                FROM "Pizzas"
+                WHERE pizza_id = :pizza_id
+            """),
+            {"pizza_id": pizza_id}
+        ).fetchone()
+
+        if not pizza:
+            raise HTTPException(status_code=404, detail="Pizza not found")
+
+        ingredients = conn.execute(
+            sqlalchemy.text("""
+                SELECT ingredient_id, amount
+                FROM "PizzaIngredient"
+                WHERE pizza_id = :pizza_id
+            """),
+            {"pizza_id": pizza_id}
+        ).fetchall()
+
+    return {
+        "ingredients": [
+            {
+                "ingredientId": row.ingredient_id,
+                "amount": row.amount
+            }
+            for row in ingredients
+        ]
+    }
 
 @router.delete("/{pizza_id}", status_code=status.HTTP_200_OK)
 def delete_pizza(pizza_id: int):

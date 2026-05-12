@@ -96,7 +96,7 @@ The response received by calling get is the list of pizzas currently stored in t
 curl call looks like:
 
 curl -X 'GET' \
-  'http://127.0.0.1:3000/pizzas/0/nutrition' \
+  'http://127.0.0.1:3000/pizzas/101/nutrition' \
   -H 'accept: application/json' \
   -H 'access_token: TheBestSlice365'
 
@@ -111,8 +111,9 @@ The response received by calling get is the nutritional information associated w
 
 3. Following this, Henry decides to update the pizza recipe by adding additional chicken to increase the protein amount. The PUT /pizzas/{pizzaId} endpoint
 curl call looks like:
+
 curl -X 'PUT' \
-  'http://127.0.0.1:3000/pizzas/pizza/0' \
+  'http://127.0.0.1:3000/pizzas/pizza/101' \
   -H 'accept: application/json' \
   -H 'access_token: TheBestSlice365' \
   -H 'Content-Type: application/json' \
@@ -130,3 +131,20 @@ curl -X 'PUT' \
   {
   "message": "Pizza updated successfully"
   }
+
+4. After updating the pizza, Henry once again calls the nutrition endpoint to verify the updated nutrition values. The GET /pizzas/{pizzaId}/nutrition endpoint
+  curl call looks like:
+
+  curl -X 'GET' \
+  'http://127.0.0.1:3000/pizzas/101/nutrition' \
+  -H 'accept: application/json' \
+  -H 'access_token: TheBestSlice365'
+
+  The response received by calling get is the updated nutritional information of the modified pizza:
+  
+  {
+  "calories": 750,
+  "protein": 60,
+  "fat": 22,
+  "carbs": 50
+}

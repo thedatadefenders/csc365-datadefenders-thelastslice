@@ -53,7 +53,7 @@ def create_pizza(pizza: PizzaCreate, user_id = 0):
 
     return {"pizzaId": pizza_id}
 
-@router.put("/pizza/{pizza_id}")
+@router.put("/{pizza_id}")
 def put_pizza(pizza_id: int, pizza: PizzaCreate):
     with db.engine.begin() as conn:
         # Does pizza exist?
@@ -111,7 +111,7 @@ def put_pizza(pizza_id: int, pizza: PizzaCreate):
         "pizzaId": pizza_id
         }
 
-@router.get("/pizza/{pizza_id}")
+@router.get("/{pizza_id}")
 def get_pizza(pizza_id: int):
     with db.engine.connect() as conn:
         pizza = conn.execute(

@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from src.api import admin, favorites, history, inventory, pizzas
+from src.api import admin, favorites, history, ingredients, pizzas, users
 from starlette.middleware.cors import CORSMiddleware
 
 description = """
@@ -7,10 +7,11 @@ The Last Slice is the premier tracking site for all your pizza needs.
 Whether you're a pizza connoisseur or just looking for a quick slice, we've got you covered. 
 """
 tags_metadata = [
-    {"name": "pizzas", "description": "Place potion orders."},
-    {"name": "history", "description": "View the available potions."},
-    {"name": "favorites", "description": "Bottle potions from the raw magical elixir."},
-    {"name": "inventory", "description": "Where you reset the game state."},
+    {"name": "pizzas", "description": "Make and get pizza recipes"},
+    {"name": "users", "description": "Make and see users"},
+    {"name": "history", "description": "View previously made pizzas"},
+    {"name": "favorites", "description": "Save and retrieve your favorite recipes!"},
+    {"name": "ingredients", "description": "Make and see ingredients"},
     {"name": "admin", "description": "Where you reset the database."},
 ]
 
@@ -42,7 +43,8 @@ app.add_middleware(
 app.include_router(pizzas.router)
 app.include_router(history.router)
 app.include_router(favorites.router)
-app.include_router(inventory.router)
+app.include_router(ingredients.router)
+app.include_router(users.router)
 app.include_router(admin.router)
 
 

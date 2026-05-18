@@ -222,7 +222,7 @@ def get_pizza_nutrition(pizza_id: int):
             "carbs": row.carbs,
         }
     
-@router.get("/pizzas/{pizza_id}/ingredients")
+@router.get("/{pizza_id}/ingredients")
 def get_pizza_ingredients(pizza_id: int):
     with db.engine.connect() as conn:
         pizza = conn.execute(

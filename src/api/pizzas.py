@@ -147,7 +147,7 @@ def get_pizza(pizza_id: int):
         ]
     }
 
-@router.get("/pizzas")
+@router.get("/")
 def get_pizzas():
     with db.engine.connect() as conn:
         pizzas = conn.execute(

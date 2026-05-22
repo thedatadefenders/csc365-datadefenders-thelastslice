@@ -17,7 +17,7 @@ router = APIRouter(
 )
 
 @router.post("/{pizza_date}/pizzas", status_code=status.HTTP_201_CREATED)
-def add_pizza_to_calendar(
+def add_pizza_to_history(
     pizza_date: date,
     pizza_id: int,
     quantity: int,
@@ -59,7 +59,7 @@ def add_pizza_to_calendar(
     }
 
 @router.get("/{pizza_date}/pizzas")
-def get_calendar_pizzas(
+def get_history_pizzas(
     pizza_date: date,
     user_id: int = 0
 ):

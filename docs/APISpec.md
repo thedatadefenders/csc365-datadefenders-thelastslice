@@ -113,11 +113,11 @@
 
 
 
-### Calendar
+### History
 
-* Add Plan for Pizzas to Calendar (WRITE FUNCTION)
+* Add Plan for Pizzas to History (WRITE FUNCTION)
 
-  (POST /calendar/{date}/pizzas)
+  (POST /history/{date}/pizzas)
 
   Input:
   {
@@ -133,9 +133,9 @@
   }
 
 
-* Get Pizzas Planned for the Date from Calendar(READ FUNCTION)
+* Get Pizzas Planned for the Date from History(READ FUNCTION)
 
-  (GET /calendar/{date}/pizzas)
+  (GET /history/{date}/pizzas)
 
   Output:
   {

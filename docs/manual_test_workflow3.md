@@ -3,7 +3,7 @@
 ## FLOW 3
 First, Owen schedules a pizza for a specific day.
 
-* POST /calendar/2026-04-21/pizzas
+* POST /history/2026-04-21/pizzas
 
 		Inputted:
 		{
@@ -22,7 +22,7 @@ Then, the system stores the planned pizza.
 
 Next, Owen wants to confirm what he has planned for that day.
 
-* GET /calendar/2026-04-21/pizzas
+* GET /history/2026-04-21/pizzas
 
 		Outputted:
 		{
@@ -50,7 +50,7 @@ Lastly, Owen is happy with the Last Slice, so he delivers a glowing review.
 
 ## Testing Results
 
-1. The curl statement called. You can find this in the /docs site under Calendar, when calling the POST /calendar/{date}/pizzas endpoint.
+1. The curl statement called. You can find this in the /docs site under History, when calling the POST /history/{date}/pizzas endpoint.
 
 curl call looks like:
   curl -X 'POST' \
@@ -71,7 +71,7 @@ curl call looks like:
   "quantity": 2
   }
 
-2. Next, Owen wants to confirm the pizzas planned for the selected date. The GET /calendar/{date}/pizzas endpoint
+2. Next, Owen wants to confirm the pizzas planned for the selected date. The GET /history/{date}/pizzas endpoint
 
 curl call looks like:
   curl -X 'GET' \

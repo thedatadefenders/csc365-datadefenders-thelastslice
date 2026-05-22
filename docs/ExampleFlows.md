@@ -128,7 +128,7 @@ Owen wants to plan his meals ahead of time, and the Last Slice offers the option
 
 First, Owen schedules a pizza for a specific day.
 
-* POST /calendar/2026-04-21/pizzas
+* POST /history/2026-04-21/pizzas
 
 		Inputted:
 		{
@@ -147,7 +147,7 @@ Then, the system stores the planned pizza.
 
 Next, Owen wants to confirm what he has planned for that day.
 
-* GET /calendar/2026-04-21/pizzas
+* GET /history/2026-04-21/pizzas
 
 		Outputted:
 		{

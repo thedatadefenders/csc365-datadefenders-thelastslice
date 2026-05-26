@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, status
 from pydantic import BaseModel, Field
 from typing import List, Annotated
 from datetime import date
+from fastapi import HTTPException
 
 
 import sqlalchemy

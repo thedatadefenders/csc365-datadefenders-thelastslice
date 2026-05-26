@@ -30,7 +30,7 @@ def create_ingredient(name = "", calories_per_unit = 0, protein_per_unit = 0, ca
 
     return {"ingredient_id": ingredient_id}
 
-@router.post("/get", status_code=status.HTTP_201_CREATED)
+@router.get("/{ingredient_id}")
 def get_ingredient(ingredient_id = 0):
     with db.engine.begin() as conn:
         try: 

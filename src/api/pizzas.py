@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, status
 from pydantic import BaseModel, Field, field_validator
 from typing import List
@@ -56,33 +57,22 @@ def create_pizza(pizza: PizzaCreate, user_id = 0):
 @router.put("/{pizza_id}")
 def put_pizza(pizza_id: int, pizza: PizzaCreate):
     with db.engine.begin() as conn:
-        # Does pizza exist?
-        exists = conn.execute(
-            sqlalchemy.text(
-                """
-                SELECT pizza_id
-                FROM "Pizzas"
-                WHERE pizza_id = :pizza_id
-                """
-            ),
-            {"pizza_id": pizza_id}
-        ).fetchone()
-
-        if not exists:
-            raise HTTPException(status_code=404, detail="Pizza not found")
-        
-        conn.execute(
+        result = conn.execute(
             sqlalchemy.text(
                 """
                 UPDATE "Pizzas"
-                SET name = :name
+                SET name = :name, last_updated = :last_updated
                 WHERE pizza_id = :pizza_id
+                RETURNING pizza_id
                 """
             ), 
-            {"pizza_id": pizza_id, "name": pizza.name}
-        )
+            {"pizza_id": pizza_id, "name": pizza.name, "last_updated": datetime.now(timezone.utc)}
+        ).fetchone()
 
-        # Delete all ingredients
+        if not result:
+            raise HTTPException(status_code=404, detail="Pizza not found")
+
+        # Delete old ingredients
         conn.execute(
             sqlalchemy.text(
                 """
@@ -93,19 +83,20 @@ def put_pizza(pizza_id: int, pizza: PizzaCreate):
             {"pizza_id": pizza_id}
         )
 
-        for item in pizza.ingredients:
-            conn.execute(
-                sqlalchemy.text("""
-                    INSERT INTO "PizzaIngredient" (pizza_id, ingredient_id, amount, unit)
-                    VALUES (:pizza_id, :ingredient_id, :amount, :unit)
-                    """),
-                {
-                    "pizza_id": pizza_id,
-                    "ingredient_id": item.ingredientId,
-                    "amount": item.amount,
-                    "unit": "grams"
-                }
-            )
+        conn.execute(
+            sqlalchemy.text("""
+                INSERT INTO "PizzaIngredient" (pizza_id, ingredient_id, amount, unit)
+                VALUES (:pizza_id, :ingredient_id, :amount, :unit)
+                """),
+            [{
+                "pizza_id": pizza_id,
+                "ingredient_id": item.ingredientId,
+                "amount": item.amount,
+                "unit": "grams"
+            }
+            for item in pizza.ingredients
+            ]
+        )
     return {
         "message": "Updated pizza",
         "pizzaId": pizza_id
@@ -148,15 +139,29 @@ def get_pizza(pizza_id: int):
     }
 
 @router.get("/")
-def get_pizzas():
+def get_pizzas(
+    limit: int = 50,
+    offset: int = 0
+):
     with db.engine.connect() as conn:
         rows = conn.execute(
             sqlalchemy.text("""
                 SELECT p.pizza_id, name, ingredient_id, amount
-                FROM "Pizzas" p
+                FROM (
+                    SELECT pizza_id, name
+                    FROM "Pizzas"
+                    ORDER BY pizza_id
+                    LIMIT :limit
+                    OFFSET :offset
+                ) p 
                 LEFT JOIN "PizzaIngredient" pi ON p.pizza_id = pi.pizza_id
+                ORDER BY p.pizza_id
             """),
-        )
+            {
+                "limit": limit,
+                "offset": offset
+            }
+        ).fetchall()
 
         if not rows:
             raise HTTPException(status_code=404, detail="No pizzas found")
@@ -209,6 +214,9 @@ def get_pizza_nutrition(pizza_id: int):
             {"pizza_id": pizza_id}
         ).fetchone()
 
+        if not row:
+            raise HTTPException(status_code=404, detail="Pizza has no ingredients")
+
         return {
             "calories": row.calories,
             "protein": row.protein,
@@ -216,39 +224,39 @@ def get_pizza_nutrition(pizza_id: int):
             "carbs": row.carbs,
         }
     
-@router.get("/{pizza_id}/ingredients")
-def get_pizza_ingredients(pizza_id: int):
-    with db.engine.connect() as conn:
-        pizza = conn.execute(
-            sqlalchemy.text("""
-                SELECT pizza_id
-                FROM "Pizzas"
-                WHERE pizza_id = :pizza_id
-            """),
-            {"pizza_id": pizza_id}
-        ).fetchone()
+# @router.get("/{pizza_id}/ingredients")
+# def get_pizza_ingredients(pizza_id: int):
+#     with db.engine.connect() as conn:
+#         pizza = conn.execute(
+#             sqlalchemy.text("""
+#                 SELECT pizza_id
+#                 FROM "Pizzas"
+#                 WHERE pizza_id = :pizza_id
+#             """),
+#             {"pizza_id": pizza_id}
+#         ).fetchone()
 
-        if not pizza:
-            raise HTTPException(status_code=404, detail="Pizza not found")
+#         if not pizza:
+#             raise HTTPException(status_code=404, detail="Pizza not found")
 
-        ingredients = conn.execute(
-            sqlalchemy.text("""
-                SELECT ingredient_id, amount
-                FROM "PizzaIngredient"
-                WHERE pizza_id = :pizza_id
-            """),
-            {"pizza_id": pizza_id}
-        ).fetchall()
+#         ingredients = conn.execute(
+#             sqlalchemy.text("""
+#                 SELECT ingredient_id, amount
+#                 FROM "PizzaIngredient"
+#                 WHERE pizza_id = :pizza_id
+#             """),
+#             {"pizza_id": pizza_id}
+#         ).fetchall()
 
-    return {
-        "ingredients": [
-            {
-                "ingredientId": row.ingredient_id,
-                "amount": row.amount
-            }
-            for row in ingredients
-        ]
-    }
+#     return {
+#         "ingredients": [
+#             {
+#                 "ingredientId": row.ingredient_id,
+#                 "amount": row.amount
+#             }
+#             for row in ingredients
+#         ]
+#     }
 
 @router.delete("/{pizza_id}", status_code=status.HTTP_200_OK)
 def delete_pizza(pizza_id: int):

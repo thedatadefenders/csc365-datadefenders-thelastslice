@@ -30,7 +30,7 @@ def create_user(name = "", email = ""):
 
     return {"user_id": user_id}
 
-@router.post("/get", status_code=status.HTTP_201_CREATED)
+@router.get("/{user_id}")
 def get_user(user_id = 0):
     with db.engine.begin() as conn:
         try: 

@@ -76,7 +76,10 @@
 
   (DELETE /pizzas/{pizzaID})
 
-  Output: 204 No Content 
+  Output:
+  {
+    "message": "Pizza deleted successfully"
+  }
 
 
 * Update Pizza Recipe

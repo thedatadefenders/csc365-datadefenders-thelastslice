@@ -44,6 +44,9 @@ def add_pizza_to_history(
                 INSERT INTO "HistoryPizzaRecord"
                 (user_id, pizza_id, date, quantity)
                 VALUES (:user_id, :pizza_id, :date, :quantity)
+                ON CONFLICT (user_id, pizza_id, date)
+                DO UPDATE SET
+                    quantity = "HistoryPizzaRecord".quantity + EXCLUDED.quantity
             """),
             {
                 "user_id": user_id,

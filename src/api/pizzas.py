@@ -102,6 +102,55 @@ def put_pizza(pizza_id: int, pizza: PizzaCreate):
         "pizzaId": pizza_id
         }
 
+@router.get("/recommend")
+def recommend_pizzas(
+    goal: str,
+    ing_count: int
+):
+    with db.engine.begin() as conn:
+        rows = conn.execute(
+            sqlalchemy.text(
+                """
+                SELECT p.pizza_id, p.name, 
+                    COUNT(pi.ingredient_id) AS ingredient_count, 
+                    SUM(i.calories_per_unit * pi.amount) AS calories,
+                    SUM(i.protein_per_unit * pi.amount) AS protein,
+                    SUM(i.fats_per_unit * pi.amount) AS fat,
+                    SUM(i.carbs_per_unit * pi.amount) AS carbs
+                FROM "Pizzas" p
+                JOIN "PizzaIngredient" pi ON p.pizza_id = pi.pizza_id
+                JOIN "Ingredients" i ON i.ingredient_id = pi.ingredient_id
+                GROUP BY p.pizza_id, p.name
+                HAVING COUNT(pi.ingredient_id) <= :ing_count
+                """
+            ), {"ing_count": ing_count}
+        ).fetchall()
+
+    def rank(row):
+        if goal == "protein":
+            return row.protein
+        elif goal == "low-cal":
+            return -row.calories
+        elif goal == "low-fat": # Lowest fat composition, fat has 9 calories/g
+            return ((-row.fat * 9) / row.calories) 
+
+    
+    ranked = sorted(rows, key=rank, reverse=True)
+
+    # Not sure exactly what we want to return here, if it's just an overview of the pizzas though this seems fine
+    return [
+        {
+            "pizzaId": p.pizza_id,
+            "name": p.name,
+            "calories": p.calories,
+            "protein": p.protein,
+            "fat": p.fat,
+            "carbs": p.carbs,
+            "ingredientCount": p.ingredient_count
+        }
+        for p in ranked
+    ]
+
 @router.get("/{pizza_id}")
 def get_pizza(pizza_id: int):
     with db.engine.connect() as conn:

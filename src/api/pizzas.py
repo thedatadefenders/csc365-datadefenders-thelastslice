@@ -150,41 +150,35 @@ def get_pizza(pizza_id: int):
 @router.get("/")
 def get_pizzas():
     with db.engine.connect() as conn:
-        pizzas = conn.execute(
+        rows = conn.execute(
             sqlalchemy.text("""
-                SELECT pizza_id, name
-                FROM "Pizzas"
+                SELECT p.pizza_id, name, ingredient_id, amount
+                FROM "Pizzas" p
+                LEFT JOIN "PizzaIngredient" pi ON p.pizza_id = pi.pizza_id
             """),
         )
 
-        if not pizzas:
+        if not rows:
             raise HTTPException(status_code=404, detail="No pizzas found")
         
-        result = []
+        pizzas = {}
 
-        for pizza in pizzas:
-            ingredients = conn.execute(
-                sqlalchemy.text("""
-                    SELECT ingredient_id, amount
-                    FROM "PizzaIngredient"
-                    WHERE pizza_id = :pizza_id
-                """),
-                {"pizza_id": pizza.pizza_id}
-            ).fetchall()
-
-            result.append({
-                "pizzaId": pizza.pizza_id,
-                "name": pizza.name,
-                "ingredients": [
-                    {
-                        "ingredientId": i.ingredient_id,
-                        "amount": i.amount
-                    }
-                    for i in ingredients
-                ]
-            })
+        for row in rows:
+            pizza_id = row.pizza_id
+            if pizza_id not in pizzas:
+                pizzas[pizza_id] = {
+                    "pizzaId": row.pizza_id,
+                    "name": row.name,
+                    "ingredients": []
+                }
+            
+            if row.ingredient_id is not None:
+                pizzas[pizza_id]["ingredients"].append({
+                    "ingredientId": row.ingredient_id,
+                    "amount": row.amount
+                })
         
-        return result
+        return list(pizzas.values())
     
 @router.get("/{pizza_id}/nutrition")
 def get_pizza_nutrition(pizza_id: int):

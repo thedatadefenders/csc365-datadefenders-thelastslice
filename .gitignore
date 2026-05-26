@@ -7,3 +7,5 @@ info.log
 .DS_Store
 alembic.ini
 alembic/env.py
+default.env
+alembic.ini

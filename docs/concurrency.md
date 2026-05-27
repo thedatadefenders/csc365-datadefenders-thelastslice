@@ -10,9 +10,11 @@ Sequence diagram:
 
 ![Concurrency Issue 1](/docs/imgs/Concurrency_Issue_1.png)
 
-### Case 2: Non-repeatable Read
+### Case 2: Concurrency Foreign Key Constraint Violation
 
-GET/pizzas/101/nutrition computes the macros of a pizza and displays the output. A non-repeatable read could happen if this transaction reads the pizza’s ingredient data, but before the transaction finishes, another transaction updates the ingredients for that same pizza.
+POST/history/{pizza_date}/pizzas currently selects from the database to see if the given pizza id exists then inserts a new row into the history using that pizza id. If someone were to delete the pizza with said id inbetween the select and the insert, the insert would fail due to a foreign key constraint violation since the pizza id would no longer exist. To fix this, the select will now also lock the row with the given pizza id, preventing deletion of the pizza id and ensuring the history table insert works without fail.
+
+![Concurrency Issue 2](/docs/imgs/Concurrency_Issue_2.png)
 
 ### Case 3: Phantom Read
 

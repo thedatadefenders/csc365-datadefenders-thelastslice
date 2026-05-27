@@ -14,6 +14,8 @@ Sequence diagram:
 
 POST/history/{pizza_date}/pizzas currently selects from the database to see if the given pizza id exists then inserts a new row into the history using that pizza id. If someone were to delete the pizza with said id inbetween the select and the insert, the insert would fail due to a foreign key constraint violation since the pizza id would no longer exist. To fix this, the select will now also lock the row with the given pizza id, preventing deletion of the pizza id and ensuring the history table insert works without fail.
 
+Sequence diagram:
+
 ![Concurrency Issue 2](/docs/imgs/Concurrency_Issue_2.png)
 
 ### Case 3: Phantom Read

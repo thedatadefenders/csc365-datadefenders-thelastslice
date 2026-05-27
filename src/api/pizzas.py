@@ -24,6 +24,14 @@ class PizzaCreate(BaseModel):
     ingredients: List[IngredientInput]
 
 
+class PizzaIngredientSearch(BaseModel):
+    ingredientIds: List[int]
+    matchType: str = "any"  # "any" or "all"
+
+
+
+
+
 @router.post("/", status_code=status.HTTP_201_CREATED)
 def create_pizza(pizza: PizzaCreate, user_id = 0):
     with db.engine.begin() as conn:
@@ -345,3 +353,55 @@ def delete_pizza(pizza_id: int):
             raise HTTPException(status_code=404, detail="Pizza not found")
 
     return {"message": "Pizza deleted successfully"}
+
+
+@router.post("/search-by-ingredients")
+def search_pizzas_by_ingredients(search: PizzaIngredientSearch):
+    if search.matchType not in ["any", "all"]:
+        raise HTTPException(status_code=400, detail="matchType must be 'any' or 'all'")
+
+    if not search.ingredientIds:
+        raise HTTPException(status_code=400, detail="ingredientIds cannot be empty")
+
+    with db.engine.connect() as conn:
+        rows = conn.execute(
+            sqlalchemy.text("""
+                SELECT 
+                    p.pizza_id,
+                    p.name,
+                    pi.ingredient_id,
+                    pi.amount,
+                    COUNT(pi.ingredient_id) OVER (PARTITION BY p.pizza_id) AS matched_count,
+                    SUM(pi.amount) OVER (PARTITION BY p.pizza_id) AS total_matched_amount
+                FROM "Pizzas" p
+                JOIN "PizzaIngredient" pi ON p.pizza_id = pi.pizza_id
+                WHERE pi.ingredient_id = ANY(:ingredient_ids)
+                ORDER BY p.pizza_id
+            """),
+            {"ingredient_ids": search.ingredientIds}
+        ).fetchall()
+
+    pizzas = {}
+
+    for row in rows:
+        if search.matchType == "all" and row.matched_count < len(set(search.ingredientIds)):
+            continue
+
+        if row.pizza_id not in pizzas:
+            pizzas[row.pizza_id] = {
+                "pizzaId": row.pizza_id,
+                "name": row.name,
+                "matchedIngredients": [],
+                "totalMatchedIngredientAmount": row.total_matched_amount
+            }
+
+        pizzas[row.pizza_id]["matchedIngredients"].append({
+            "ingredientId": row.ingredient_id,
+            "amount": row.amount
+        })
+
+    return {
+        "ingredientsSearched": search.ingredientIds,
+        "matchType": search.matchType,
+        "pizzas": list(pizzas.values())
+    }

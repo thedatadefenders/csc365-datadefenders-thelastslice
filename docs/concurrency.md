@@ -16,4 +16,9 @@ GET/pizzas/101/nutrition computes the macros of a pizza and displays the output.
 
 ### Case 3: Phantom Read
 
-The meal planner exposes the endpoint GET /calendar/{date}/total_nutrition, which calculates the total macros for all pizzas scheduled on a specific day. A phantom read could occur if the transaction begins by querying all calendar entries for that date and collecting the (pizzaId, quantity) pairs needed for the nutrition calculation. While this transaction is still processing, another transaction could execute POST /calendar/2026-04-21/pizzas and insert a new pizza entry for that same date.
+The meal planner exposes the endpoint GET /history/{date}/total_nutrition, which calculates the total macros for all pizzas scheduled on a specific day. A phantom read could occur if the transaction begins by querying all calendar entries for that date and collecting the (pizzaId, quantity) pairs needed for the nutrition calculation. While this transaction is still processing, another transaction could execute POST /calendar/2026-04-21/pizzas and insert a new pizza entry for that same date.
+
+Sequence diagram:
+
+<img width="829" height="730" alt="image" src="https://github.com/user-attachments/assets/faf6a20d-4cbd-4a00-aad6-4256ad9a47be" />
+

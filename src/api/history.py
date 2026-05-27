@@ -32,6 +32,7 @@ def add_pizza_to_history(
                 SELECT pizza_id
                 FROM "Pizzas"
                 WHERE pizza_id = :pizza_id
+                FOR KEY SHARE
             """),
             {"pizza_id": pizza_id}
         ).fetchone()

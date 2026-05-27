@@ -2,7 +2,7 @@
 
 ### Case 1: Lost Update
 
-Two users each call PUT/pizzaz/101 at the same time. Both try to update the pizza by adding ingredients. Without concurrency control, both transactions operate on the same items, each one creating their own version, and one will overwirte the other resulting in one update being lost.
+Two users each call PUT/pizzaz/101 at the same time. Both try to update the pizza by adding ingredients. Without concurrency control, both transactions operate on the same items, each one creating their own version, and one will overwrite the other resulting in one update being lost.
 
 ### Case 2: Non-repeatable Read
 

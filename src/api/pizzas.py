@@ -349,45 +349,79 @@ def search_pizzas_by_ingredients(search: PizzaIngredientSearch):
     if not search.ingredientIds:
         raise HTTPException(status_code=400, detail="ingredientIds cannot be empty")
 
+    selected_ids = list(set(search.ingredientIds))
+
     with db.engine.connect() as conn:
         rows = conn.execute(
             sqlalchemy.text("""
-                SELECT 
+                SELECT
                     p.pizza_id,
                     p.name,
                     pi.ingredient_id,
                     pi.amount,
-                    COUNT(pi.ingredient_id) OVER (PARTITION BY p.pizza_id) AS matched_count,
-                    SUM(pi.amount) OVER (PARTITION BY p.pizza_id) AS total_matched_amount
+                    CASE
+                        WHEN pi.ingredient_id = ANY(:ingredient_ids) THEN true
+                        ELSE false
+                    END AS is_matched
                 FROM "Pizzas" p
                 JOIN "PizzaIngredient" pi ON p.pizza_id = pi.pizza_id
-                WHERE pi.ingredient_id = ANY(:ingredient_ids)
                 ORDER BY p.pizza_id
             """),
-            {"ingredient_ids": search.ingredientIds}
+            {"ingredient_ids": selected_ids}
         ).fetchall()
 
     pizzas = {}
 
     for row in rows:
-        if search.matchType == "all" and row.matched_count < len(set(search.ingredientIds)):
-            continue
-
         if row.pizza_id not in pizzas:
             pizzas[row.pizza_id] = {
                 "pizzaId": row.pizza_id,
                 "name": row.name,
                 "matchedIngredients": [],
-                "totalMatchedIngredientAmount": row.total_matched_amount
+                "missingIngredients": [],
+                "totalIngredientCount": 0,
+                "matchedIngredientCount": 0,
+                "totalMatchedIngredientAmount": 0
             }
 
-        pizzas[row.pizza_id]["matchedIngredients"].append({
+        pizzas[row.pizza_id]["totalIngredientCount"] += 1
+
+        ingredient = {
             "ingredientId": row.ingredient_id,
             "amount": row.amount
-        })
+        }
+
+        if row.is_matched:
+            pizzas[row.pizza_id]["matchedIngredients"].append(ingredient)
+            pizzas[row.pizza_id]["matchedIngredientCount"] += 1
+            pizzas[row.pizza_id]["totalMatchedIngredientAmount"] += row.amount
+        else:
+            pizzas[row.pizza_id]["missingIngredients"].append(ingredient)
+
+    results = []
+
+    for pizza in pizzas.values():
+        if pizza["totalIngredientCount"] > 0:
+            pizza["matchPercentage"] = round(
+                (pizza["matchedIngredientCount"] / pizza["totalIngredientCount"]) * 100,
+                2
+            )
+        else:
+            pizza["matchPercentage"] = 0
+
+        if search.matchType == "any":
+            if pizza["matchedIngredientCount"] > 0:
+                results.append(pizza)
+
+        elif search.matchType == "all":
+            if pizza["matchedIngredientCount"] == len(selected_ids):
+                results.append(pizza)
+
+    results.sort(key=lambda p: p["matchPercentage"], reverse=True)
 
     return {
-        "ingredientsSearched": search.ingredientIds,
+        "ingredientsSearched": selected_ids,
         "matchType": search.matchType,
-        "pizzas": list(pizzas.values())
+        "pizzas": results
     }
+

@@ -55,22 +55,33 @@ def create_pizza(pizza: PizzaCreate, user_id = 0):
     return {"pizzaId": pizza_id}
 
 @router.put("/{pizza_id}")
-def put_pizza(pizza_id: int, pizza: PizzaCreate):
+def put_pizza(pizza_id: int, user_id: int, pizza: PizzaCreate):
     with db.engine.begin() as conn:
-        result = conn.execute(
+        existing = conn.execute(
+            sqlalchemy.text(
+                """
+                SELECT pizza_id
+                FROM "Pizzas"
+                WHERE pizza_id = :pizza_id
+                FOR UPDATE
+                """
+            ),
+            {"pizza_id": pizza_id},
+        ).fetchone()
+
+        if not existing:
+            raise HTTPException(status_code=404, detail="Pizza not found")
+
+        conn.execute(
             sqlalchemy.text(
                 """
                 UPDATE "Pizzas"
-                SET name = :name, last_updated = :last_updated
+                SET name = :name, user_id = :user_id, last_updated = :last_updated
                 WHERE pizza_id = :pizza_id
-                RETURNING pizza_id
                 """
             ), 
-            {"pizza_id": pizza_id, "name": pizza.name, "last_updated": datetime.now(timezone.utc)}
-        ).fetchone()
-
-        if not result:
-            raise HTTPException(status_code=404, detail="Pizza not found")
+            {"pizza_id": pizza_id, "name": pizza.name, "user_id": user_id, "last_updated": datetime.now(timezone.utc)}
+        )
 
         # Delete old ingredients
         conn.execute(
@@ -97,6 +108,9 @@ def put_pizza(pizza_id: int, pizza: PizzaCreate):
             for item in pizza.ingredients
             ]
         )
+
+
+
     return {
         "message": "Updated pizza",
         "pizzaId": pizza_id

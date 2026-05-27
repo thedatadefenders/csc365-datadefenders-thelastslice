@@ -115,6 +115,64 @@
   }
 
 
+* Recommend Pizzas (COMPLEX READ FUNCTION)
+
+  (GET /pizzas/recommend?goal={goal}&ing_count={ing_count})
+
+  Query Parameters:
+  - goal: "protein" | "low-cal" | "low-fat"
+  - ing_count: "integer"
+
+  Output:
+  [
+    {
+      "pizzaId": "integer",
+      "name": "string",
+      "calories": "number",
+      "protein": "number",
+      "fat": "number",
+      "carbs": "number",
+      "ingredientCount": "integer"
+    }
+  ]
+
+* Search Pizzas by Ingredients (COMPLEX READ FUNCTION)
+
+  (POST /pizzas/search-by-ingredients)
+
+  Input:
+  {
+    "ingredientIds": ["integer"],
+    "matchType": "string"
+  }
+
+  Output:
+  {
+    "ingredientsSearched": ["integer"],
+    "matchType": "string",
+    "pizzas": [
+      {
+        "pizzaId": "integer",
+        "name": "string",
+        "matchedIngredients": [
+          {
+            "ingredientId": "integer",
+            "amount": "number"
+          }
+        ],
+        "missingIngredients": [
+          {
+            "ingredientId": "integer",
+            "amount": "number"
+          }
+        ],
+        "totalIngredientCount": "integer",
+        "matchedIngredientCount": "integer",
+        "totalMatchedIngredientAmount": "number",
+        "matchPercentage": "number"
+      }
+    ]
+  }
 
 ### History
 

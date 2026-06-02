@@ -45,3 +45,52 @@ The only realistic thing I would change about this faked data would be the histo
 # Performance Tuning
 
 
+Running Explain
+
+Query Part 1: Check If Pizza Exists:
+
+    EXPLAIN ANALYZE
+    SELECT pizza_id, name
+    FROM "Pizzas"
+    WHERE pizza_id = 1;
+
+Result: Index Scan using "Pizzas_pkey" on "Pizzas"  (cost=0.42..8.44 rows=1 width=26) (actual time=0.079..0.080 rows=1.00 loops=1)
+
+
+Query Part 2: Run Select
+
+    EXPLAIN ANALYZE
+    SELECT 
+        SUM(calories_per_unit * amount) as calories, 
+        SUM(protein_per_unit * amount) as protein, 
+        SUM(fats_per_unit * amount) as fat, 
+        SUM(carbs_per_unit * amount) as carbs
+    FROM "PizzaIngredient"
+    JOIN "Ingredients" 
+        ON "PizzaIngredient".ingredient_id = "Ingredients".ingredient_id
+    WHERE pizza_id = 1;
+
+Result: Aggregate  (cost=17.45..17.46 rows=1 width=128) (actual time=0.273..0.275 rows=1.00 loops=1)
+
+
+Since our where clause searches for a pizza_id, we should make an index on pizza_id from PizzaIngredient Table
+
+Post Index:
+
+    CREATE INDEX idx_pizzaingredient_pizza_id
+    ON "PizzaIngredient"(pizza_id);
+
+Result: Aggregate  (cost=12.20..12.21 rows=1 width=128) (actual time=0.234..0.236 rows=1.00 loops=1)
+
+As demonstrated by actual time, this query grows to be slightly faster by at least 40 ms. This is reasonable because our the cardinality PizzaIngredient table is sufficiently large around 800k rows, this cuts down the amount needed to search significantly.   This brings it below the 2nd slowest query, which is search-by-ingredients 
+
+*Data Values may not be the same as two separate laptops and local env were used in doing the Performance Tuning and Data Collection
+
+
+
+
+
+
+
+
+

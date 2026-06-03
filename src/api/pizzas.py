@@ -126,6 +126,7 @@ def put_pizza(pizza_id: int, user_id: int, pizza: PizzaCreate):
 
 @router.get("/recommend")
 def recommend_pizzas(
+    page: int,
     goal: str,
     ing_count: int
 ):
@@ -156,8 +157,10 @@ def recommend_pizzas(
         elif goal == "low-fat": # Lowest fat composition, fat has 9 calories/g
             return ((-row.fat * 9) / row.calories) 
 
-    
-    ranked = sorted(rows, key=rank, reverse=True)
+    low = page * 10
+    high = (page * 10) + 10
+
+    ranked = sorted(rows, key=rank, reverse=True)[low:high]
 
     # Not sure exactly what we want to return here, if it's just an overview of the pizzas though this seems fine
     return [
@@ -364,7 +367,7 @@ def delete_pizza(pizza_id: int):
 
 
 @router.post("/search-by-ingredients")
-def search_pizzas_by_ingredients(search: PizzaIngredientSearch):
+def search_pizzas_by_ingredients(page: int, search: PizzaIngredientSearch):
     if search.matchType not in ["any", "all"]:
         raise HTTPException(status_code=400, detail="matchType must be 'any' or 'all'")
 
@@ -440,6 +443,11 @@ def search_pizzas_by_ingredients(search: PizzaIngredientSearch):
                 results.append(pizza)
 
     results.sort(key=lambda p: p["matchPercentage"], reverse=True)
+
+    low = page * 10
+    high = (page * 10) + 10
+
+    results = results[low:high]
 
     return {
         "ingredientsSearched": selected_ids,

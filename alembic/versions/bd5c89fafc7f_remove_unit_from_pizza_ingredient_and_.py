@@ -20,9 +20,9 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     op.drop_column("PizzaIngredient", "unit")
-    op.add_column("Ingredients", sa.Column("unit", sa.String(), nullable = False))
+    op.add_column("Ingredients", sa.Column("unit", sa.String(), server_default="1 cup", nullable = False))
 
 
 def downgrade() -> None:
     op.drop_column("Ingredients", "unit")
-    op.add_column("PizzaIngredient", sa.Column("unit", sa.String(), nullable = False))
+    op.add_column("PizzaIngredient", sa.Column("unit", sa.String(), server_default="1 cup", nullable = False))

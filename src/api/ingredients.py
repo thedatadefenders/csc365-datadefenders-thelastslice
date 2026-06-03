@@ -12,18 +12,18 @@ router = APIRouter(
 )
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
-def create_ingredient(name = "", calories_per_unit = 0, protein_per_unit = 0, carbs_per_unit = 0, fats_per_unit = 0):
+def create_ingredient(name = "", calories_per_unit = 0, protein_per_unit = 0, carbs_per_unit = 0, fats_per_unit = 0, unit = ""):
     if name == "":
         return "Empty name provided, try again"
         
     with db.engine.begin() as conn:
         result = conn.execute(
             sqlalchemy.text("""
-                INSERT INTO "Ingredients" (name, calories_per_unit, protein_per_unit, carbs_per_unit, fats_per_unit)
-                VALUES (:name, :calories_per_unit, :protein_per_unit, :carbs_per_unit, :fats_per_unit)
+                INSERT INTO "Ingredients" (name, calories_per_unit, protein_per_unit, carbs_per_unit, fats_per_unit, unit)
+                VALUES (:name, :calories_per_unit, :protein_per_unit, :carbs_per_unit, :fats_per_unit, :unit)
                 RETURNING ingredient_id
             """),
-            {"name": name, "calories_per_unit": calories_per_unit, "protein_per_unit": protein_per_unit, "carbs_per_unit": carbs_per_unit, "fats_per_unit": fats_per_unit}
+            {"name": name, "calories_per_unit": calories_per_unit, "protein_per_unit": protein_per_unit, "carbs_per_unit": carbs_per_unit, "fats_per_unit": fats_per_unit, "unit": unit}
         )
 
         ingredient_id = result.scalar()

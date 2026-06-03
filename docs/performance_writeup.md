@@ -26,65 +26,78 @@ The only realistic thing I would change about this faked data would be the histo
 
 | Endpoint                           |                         Time (ms) |
 | ---------------------------------- | --------------------------------: |
-| POST /pizzas/                      |                    **310.016 ms** |
-| GET /pizzas/                       |                    **307.630 ms** |
-| PUT /pizzas/1                      |                    **402.823 ms** |
-| GET /pizzas/1                      |                    **380.598 ms** |
-| DELETE /pizzas/1                   |                    **317.638 ms** |
-| GET /pizzas/recommend              |                    **409.129 ms** |
-| GET /pizzas/1/nutrition            |        **437.290 ms** *(slowest)* |
-| GET /pizzas/1/ingredients          |                    **306.913 ms** |
-| POST /pizzas/search-by-ingredients |                    **430.033 ms** |
-| POST /history/date/pizzas          |                    **266.597 ms** |
-| GET /history/date                  |                    **300.333 ms** |
-| POST /ingredients/create           |                    **243.717 ms** |
-| GET /ingredients/6                 |                    **326.180 ms** |
+| POST /pizzas/                      |                      **3.301 ms** |
+| GET /pizzas/                       |                      **1.730 ms** |
+| PUT /pizzas/1                      |                      **0.958 ms** |
+| GET /pizzas/1                      |                      **1.018 ms** |
+| DELETE /pizzas/1                   |                      **0.763 ms** |
+| GET /pizzas/recommend              |        **659.582 ms** *(slowest)* |
+| GET /pizzas/1/nutrition            |                      **0.355 ms** |
+| POST /pizzas/search-by-ingredients |                    **205.451 ms** |
+| POST /history/date/pizzas          |                      **1.099 ms** |
+| GET /history/date                  |                      **0.421 ms** |
+| POST /ingredients/create           |                      **0.368 ms** |
+| GET /ingredients/6                 |                      **0.223 ms** |
 
 
 
 # Performance Tuning
 
 
-Running Explain
+Running The Recommend Query with Explain Analyze:
 
-Query Part 1: Check If Pizza Exists:
+        EXPLAIN ANALYZE
+        SELECT p.pizza_id, p.name,
+            COUNT(pi.ingredient_id) AS ingredient_count,
+            SUM(i.calories_per_unit * pi.amount) AS calories,
+            SUM(i.protein_per_unit * pi.amount) AS protein,
+            SUM(i.fats_per_unit * pi.amount) AS fat,
+            SUM(i.carbs_per_unit * pi.amount) AS carbs
+        FROM "Pizzas" p
+        JOIN "PizzaIngredient" pi 
+            ON p.pizza_id = pi.pizza_id
+        JOIN "Ingredients" i 
+            ON i.ingredient_id = pi.ingredient_id
+        GROUP BY p.pizza_id, p.name
+        HAVING COUNT(pi.ingredient_id) <= 5;
 
-    EXPLAIN ANALYZE
-    SELECT pizza_id, name
-    FROM "Pizzas"
-    WHERE pizza_id = 1;
-
-Result: Index Scan using "Pizzas_pkey" on "Pizzas"  (cost=0.42..8.44 rows=1 width=26) (actual time=0.079..0.080 rows=1.00 loops=1)
-
-
-Query Part 2: Run Select
-
-    EXPLAIN ANALYZE
-    SELECT 
-        SUM(calories_per_unit * amount) as calories, 
-        SUM(protein_per_unit * amount) as protein, 
-        SUM(fats_per_unit * amount) as fat, 
-        SUM(carbs_per_unit * amount) as carbs
-    FROM "PizzaIngredient"
-    JOIN "Ingredients" 
-        ON "PizzaIngredient".ingredient_id = "Ingredients".ingredient_id
-    WHERE pizza_id = 1;
-
-Result: Aggregate  (cost=17.45..17.46 rows=1 width=128) (actual time=0.273..0.275 rows=1.00 loops=1)
+Resulting Statement from the Recommend Query: 
 
 
-Since our where clause searches for a pizza_id, we should make an index on pizza_id from PizzaIngredient Table
+    GroupAggregate  (cost=1.23..100367.08 rows=66359 width=162) (actual time=14.197..651.415 rows=199076.00 loops=1)
+      Group Key: p.pizza_id
+      Filter: (count(pi.ingredient_id) <= 5)
+      Buffers: shared hit=10543
+      ->  Merge Join  (cost=1.23..68019.07 rows=796251 width=54) (actual time=14.169..349.591 rows=796251.00 loops=1)
+            Merge Cond: (pi.pizza_id = p.pizza_id)
+            Buffers: shared hit=10543
+            ->  Nested Loop  (cost=0.58..50476.93 rows=796251 width=32) (actual time=14.135..253.320 rows=796251.00 loops=1)
+                  Buffers: shared hit=7996
+    "              ->  Index Scan using ""PizzaIngredient_pkey"" on ""PizzaIngredient"" pi  (cost=0.42..30649.19 rows=796251 width=12) (actual time=14.100..96.119 rows=796251.00 loops=1)"
+                        Index Searches: 1
+                        Buffers: shared hit=7756
+                  ->  Memoize  (cost=0.15..0.17 rows=1 width=24) (actual time=0.000..0.000 rows=1.00 loops=796251)
+                        Cache Key: pi.ingredient_id
+                        Cache Mode: logical
+                        Hits: 796131  Misses: 120  Evictions: 0  Overflows: 0  Memory Usage: 15kB
+                        Buffers: shared hit=240
+    "                    ->  Index Scan using ""Ingredients_pkey"" on ""Ingredients"" i  (cost=0.14..0.16 rows=1 width=24) (actual time=0.001..0.001 rows=1.00 loops=120)"
+                              Index Cond: (ingredient_id = pi.ingredient_id)
+                              Index Searches: 120
+                              Buffers: shared hit=240
+    "        ->  Index Scan using ""Pizzas_pkey"" on ""Pizzas"" p  (cost=0.42..7091.90 rows=199077 width=26) (actual time=0.013..17.788 rows=199077.00 loops=1)"
+                  Index Searches: 1
+                  Buffers: shared hit=2547
+    Planning:
+      Buffers: shared hit=33 dirtied=1
+    Planning Time: 1.394 ms
+    JIT:
+      Functions: 21
+      Options: Inlining false, Optimization false, Expressions true, Deforming true
+      Timing: Generation 2.115 ms (Deform 0.680 ms), Inlining 0.000 ms, Optimization 1.382 ms, Emission 12.699 ms, Total 16.195 ms
+    Execution Time: 658.188 ms
 
-Post Index:
-
-    CREATE INDEX idx_pizzaingredient_pizza_id
-    ON "PizzaIngredient"(pizza_id);
-
-Result: Aggregate  (cost=12.20..12.21 rows=1 width=128) (actual time=0.234..0.236 rows=1.00 loops=1)
-
-As demonstrated by actual time, this query grows to be slightly faster by at least 40 ms. This is reasonable because our the cardinality PizzaIngredient table is sufficiently large around 800k rows, this cuts down the amount needed to search significantly.   This brings it below the 2nd slowest query, which is search-by-ingredients 
-
-*Data Values may not be the same as two separate laptops and local env were used in doing the Performance Tuning and Data Collection
+3 Indexs are already used within our query, speeding up the query sufficiently for our service. This makes the next logical scenario to seek improvement in execution at the code itself.  Inherently speaking, since this functions queries basically almost the entire database, fixes to this could be to consoldiate information beforhand like generating the totals of nutritional info beforehand.
 
 
 

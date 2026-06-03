@@ -49,14 +49,13 @@ def create_pizza(pizza: PizzaCreate, user_id = 0):
         for item in pizza.ingredients:
             conn.execute(
                 sqlalchemy.text("""
-                    INSERT INTO "PizzaIngredient" (pizza_id, ingredient_id, amount, unit)
-                    VALUES (:pizza_id, :ingredient_id, :amount, :unit)
+                    INSERT INTO "PizzaIngredient" (pizza_id, ingredient_id, amount)
+                    VALUES (:pizza_id, :ingredient_id, :amount)
                     """),
                 {
                     "pizza_id": pizza_id,
                     "ingredient_id": item.ingredientId,
                     "amount": item.amount,
-                    "unit": "grams"
                 }
             )
 
@@ -104,14 +103,13 @@ def put_pizza(pizza_id: int, user_id: int, pizza: PizzaCreate):
 
         conn.execute(
             sqlalchemy.text("""
-                INSERT INTO "PizzaIngredient" (pizza_id, ingredient_id, amount, unit)
-                VALUES (:pizza_id, :ingredient_id, :amount, :unit)
+                INSERT INTO "PizzaIngredient" (pizza_id, ingredient_id, amount)
+                VALUES (:pizza_id, :ingredient_id, :amount)
                 """),
             [{
                 "pizza_id": pizza_id,
                 "ingredient_id": item.ingredientId,
                 "amount": item.amount,
-                "unit": "grams"
             }
             for item in pizza.ingredients
             ]

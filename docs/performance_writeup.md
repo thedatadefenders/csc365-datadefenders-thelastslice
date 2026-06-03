@@ -26,19 +26,18 @@ The only realistic thing I would change about this faked data would be the histo
 
 | Endpoint                           |                         Time (ms) |
 | ---------------------------------- | --------------------------------: |
-| POST /pizzas/                      |                    **310.016 ms** |
-| GET /pizzas/                       |                    **307.630 ms** |
-| PUT /pizzas/1                      |                    **402.823 ms** |
-| GET /pizzas/1                      |                    **380.598 ms** |
-| DELETE /pizzas/1                   |                    **317.638 ms** |
-| GET /pizzas/recommend              |                    **409.129 ms** |
-| GET /pizzas/1/nutrition            |        **437.290 ms** *(slowest)* |
-| GET /pizzas/1/ingredients          |                    **306.913 ms** |
-| POST /pizzas/search-by-ingredients |                    **430.033 ms** |
-| POST /history/date/pizzas          |                    **266.597 ms** |
-| GET /history/date                  |                    **300.333 ms** |
-| POST /ingredients/create           |                    **243.717 ms** |
-| GET /ingredients/6                 |                    **326.180 ms** |
+| POST /pizzas/                      |                      **3.301 ms** |
+| GET /pizzas/                       |                      **1.730 ms** |
+| PUT /pizzas/1                      |                      **0.958 ms** |
+| GET /pizzas/1                      |                      **1.018 ms** |
+| DELETE /pizzas/1                   |                      **0.763 ms** |
+| GET /pizzas/recommend              |        **682.710 ms** *(slowest)* |
+| GET /pizzas/1/nutrition            |                      **0.355 ms** |
+| POST /pizzas/search-by-ingredients |                    **205.451 ms** |
+| POST /history/date/pizzas          |                      **1.099 ms** |
+| GET /history/date                  |                      **0.421 ms** |
+| POST /ingredients/create           |                      **0.368 ms** |
+| GET /ingredients/6                 |                      **0.223 ms** |
 
 
 

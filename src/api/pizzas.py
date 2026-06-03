@@ -340,6 +340,14 @@ def delete_pizza(pizza_id: int):
             {"pizza_id": pizza_id}
         )
 
+        conn.execute(
+            sqlalchemy.text("""
+                DELETE FROM "HistoryPizzaRecord"
+                WHERE pizza_id = :pizza_id
+            """),
+            {"pizza_id": pizza_id}
+        )
+
         result = conn.execute(
             sqlalchemy.text("""
                 DELETE FROM "Pizzas"
